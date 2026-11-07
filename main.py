@@ -1,4 +1,4 @@
-import os, asyncio, random, math
+import os, asyncio, random, math, time
 # --- FIX for: 'Response' object has no attribute 'reason_phrase' ---
 try:
     import httpx
@@ -47,6 +47,19 @@ def macd(prices):
     signal = line * 0.9
     return line, signal
 
+def bollinger(prices, period=20):
+    if len(prices) < period: return prices[-1], prices[-1], prices[-1]
+    mid = sum(prices[-period:]) / period
+    std = (sum((x-mid)**2 for x in prices[-period:]) / period) ** 0.5
+    return mid + 2*std, mid, mid - 2*std
+
+def stochastic(prices, period=14):
+    if len(prices) < period: return 50
+    low = min(prices[-period:])
+    high = max(prices[-period:])
+    if high == low: return 50
+    return (prices[-1] - low) / (high - low) * 100
+
 def analyze(prices):
     if len(prices) < 30:
         return "call", "⚠️ Not enough candles", 50, 0, 0, 0, 0
@@ -54,14 +67,28 @@ def analyze(prices):
     e21 = ema(prices, 21)
     macd_line, macd_sig = macd(prices)
     r = rsi(prices)
-    # LOGIC LIKE VIDEO
-    if e9 > e21 and macd_line > macd_sig and r < 70:
-        return "call", f"📈 uptrend: EMA9({e9:.5f}) > EMA21({e21:.5f}), MACD up", r, e9, e21, macd_line, macd_sig
-    elif e9 < e21 and macd_line < macd_sig and r > 30:
-        return "put", f"📉 downtrend: EMA9({e9:.5f}) < EMA21({e21:.5f}), MACD down", r, e9, e21, macd_line, macd_sig
+    upper, mid, lower = bollinger(prices)
+    stoch = stochastic(prices)
+    price = prices[-1]
+    up_score = 0
+    down_score = 0
+    if e9 > e21: up_score += 1
+    else: down_score += 1
+    if macd_line > macd_sig: up_score += 1
+    else: down_score += 1
+    if r < 70 and r > 45: up_score += 1
+    elif r > 30 and r < 55: down_score += 1
+    if price > mid: up_score += 1
+    else: down_score += 1
+    if stoch < 80 and stoch > 40: up_score += 1
+    elif stoch > 20 and stoch < 60: down_score += 1
+    if up_score >= 4:
+        return "call", f"📈 STRONG CALL: {up_score}/5 UP\nEMA9 {e9:.5f} > EMA21 {e21:.5f}\nMACD {macd_line:.5f} > Signal\nRSI {r:.1f} | Stoch {stoch:.1f}\nPrice {price:.5f} > Bollinger Mid {mid:.5f}", r, e9, e21, macd_line, macd_sig
+    elif down_score >= 4:
+        return "put", f"📉 STRONG PUT: {down_score}/5 DOWN\nEMA9 {e9:.5f} < EMA21 {e21:.5f}\nMACD {macd_line:.5f} < Signal\nRSI {r:.1f} | Stoch {stoch:.1f}\nPrice {price:.5f} < Bollinger Mid {mid:.5f}", r, e9, e21, macd_line, macd_sig
     else:
-        return "wait", f"⏳ No clear trend - wait: EMA9 {e9:.5f} - EMA21 {e21:.5f}", r, e9, e21, macd_line, macd_sig
-
+        return "wait", f"⏳ WAIT: Up {up_score}/5 Down {down_score}/5\nEMA9 {e9:.5f} | EMA21 {e21:.5f} | RSI {r:.1f} | Stoch {stoch:.1f} | Bollinger {lower:.5f}-{upper:.5f}", r, e9, e21, macd_line, macd_sig
+        
 async def get_candles(pair_clean):
     # Try REAL candles, fallback to simulated candles for DEMO
     if state["account"]=="REAL" and state["qx"]:

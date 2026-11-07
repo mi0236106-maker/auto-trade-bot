@@ -1,4 +1,4 @@
 python-telegram-bot==20.7
-git+https://github.com/ahsanaligaminnn/QuotexApi.git
+quotexapi
 requests
 websocket-client

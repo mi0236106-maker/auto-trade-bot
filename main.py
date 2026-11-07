@@ -99,7 +99,7 @@ def setup_kb():
 
 async def connect_quotex(account_type):
     try:
-        from quotexapi.stable_api import Quotex
+        from pyquotex.stable_api import Quotex
         email = os.getenv("QUOTEX_EMAIL"); password = os.getenv("QUOTEX_PASSWORD")
         if not email or not password:
             return False, "❌ Add QUOTEX_EMAIL + QUOTEX_PASSWORD in Render first!"

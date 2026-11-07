@@ -2,6 +2,3 @@ python-telegram-bot==20.7
 pyquotex @ git+https://github.com/cleitonleonel/pyquotex.git
 httpx==0.27.2
 requests
-websocket-client
-websockets==12.0
-aiohttp==3.9.5

@@ -1,12 +1,24 @@
-import os, asyncio, random, math, time
-# --- FIX for: 'Response' object has no attribute 'reason_phrase' ---
+import os, asyncio, random, math, time, http.client
+# --- STRONG FIX for reason_phrase ---
 try:
     import httpx
-    if not hasattr(httpx.Response, "reason_phrase"):
-        httpx.Response.reason_phrase = property(lambda self: getattr(self, "reason", "") or "")
+    def _reason(self):
+        try:
+            return http.client.responses.get(self.status_code, "")
+        except Exception:
+            return ""
+    httpx.Response.reason_phrase = property(_reason)
+    try:
+        httpx._models.Response.reason_phrase = property(_reason)
+    except Exception:
+        pass
+    try:
+        import requests
+        requests.models.Response.reason_phrase = property(lambda s: getattr(s, "reason", "") or "")
+    except Exception:
+        pass
 except Exception:
     pass
-
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 

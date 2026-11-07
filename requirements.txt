@@ -1,2 +1,4 @@
 python-telegram-bot==20.7
-quotexapi==1.0.0
+quotexapi
+requests
+websocket-client

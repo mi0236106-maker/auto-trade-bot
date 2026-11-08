@@ -1,26 +1,6 @@
 import os, asyncio, random, math, time
-# --- FIX v3: Patch pyquotex + websocket files on disk BEFORE they load ---
 def _fix_files():
-    try:
-        import pathlib
-        for pkg in ["pyquotex", "websocket", "httpx", "requests"]:
-            try:
-                mod = __import__(pkg)
-                base = pathlib.Path(mod.__file__).parent
-                for p in base.rglob("*.py"):
-                    try:
-                        t = p.read_text(errors="ignore")
-                        if "reason_phrase" in t or "quotex.com" in t:
-    t = t.replace(".reason_phrase", ".reason")
-    t = t.replace("quotex.com", "qxbroker.com")
-    p.write_text(t)
-    print(f"FIXED {p}")
-                    except Exception:
-                        pass
-            except Exception:
-                pass
-    except Exception as e:
-        print(f"Fix failed: {e}")
+    pass
 _fix_files()
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes

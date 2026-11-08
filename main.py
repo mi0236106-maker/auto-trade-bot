@@ -4,7 +4,13 @@ def _fix_files():
 _fix_files()
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
-
+# --- PATCH httpx reason_phrase ---
+try:
+    import httpx
+    if not hasattr(httpx.Response, "reason_phrase"):
+        httpx.Response.reason_phrase = property(lambda self: getattr(self, "reason", "") or "")
+except Exception:
+    pass
 BASE_AMOUNT = 1.0
 DEALS = 5
 STEPS = 3

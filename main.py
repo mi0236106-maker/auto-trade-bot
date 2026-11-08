@@ -1,34 +1,41 @@
 import os, asyncio, random, math, time, http.client
-# --- ULTIMATE FIX for reason_phrase ---
+# --- FIX v2: __getattr__ works even when property fails ---
+def _patch_reason(cls):
+    try:
+        orig = getattr(cls, "__getattr__", None)
+        def _getattr(self, name):
+            if name == "reason_phrase":
+                return getattr(self, "reason", "") or getattr(self, "status", "") and "" or ""
+            if orig:
+                return orig(self, name)
+            raise AttributeError(name)
+        cls.__getattr__ = _getattr
+    except Exception:
+        pass
+
 try:
     import httpx
-    def _reason(self):
-        try:
-            return http.client.responses.get(self.status_code, "")
-        except Exception:
-            return ""
-    try:
-        httpx.Response.reason_phrase = property(_reason)
-    except Exception:
-        pass
-    try:
-        httpx._models.Response.reason_phrase = property(_reason)
-    except Exception:
-        pass
+    _patch_reason(httpx.Response)
+    _patch_reason(httpx._models.Response)
 except Exception:
     pass
 try:
     import requests
-    requests.models.Response.reason_phrase = property(lambda s: getattr(s, "reason", "") or "")
+    _patch_reason(requests.models.Response)
 except Exception:
     pass
 try:
-    http.client.HTTPResponse.reason_phrase = property(lambda s: getattr(s, "reason", "") or "")
+    _patch_reason(http.client.HTTPResponse)
 except Exception:
     pass
 try:
     import urllib3.response
-    urllib3.response.HTTPResponse.reason_phrase = property(lambda s: getattr(s, "reason", "") or "")
+    _patch_reason(urllib3.response.HTTPResponse)
+except Exception:
+    pass
+try:
+    import websocket._http as _wshttp
+    # websocket-client uses http.client internally, already patched
 except Exception:
     pass
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update

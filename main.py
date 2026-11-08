@@ -1,43 +1,25 @@
-import os, asyncio, random, math, time, http.client
-# --- FIX v2: __getattr__ works even when property fails ---
-def _patch_reason(cls):
+import os, asyncio, random, math, time
+# --- FIX v3: Patch pyquotex + websocket files on disk BEFORE they load ---
+def _fix_files():
     try:
-        orig = getattr(cls, "__getattr__", None)
-        def _getattr(self, name):
-            if name == "reason_phrase":
-                return getattr(self, "reason", "") or getattr(self, "status", "") and "" or ""
-            if orig:
-                return orig(self, name)
-            raise AttributeError(name)
-        cls.__getattr__ = _getattr
-    except Exception:
-        pass
-
-try:
-    import httpx
-    _patch_reason(httpx.Response)
-    _patch_reason(httpx._models.Response)
-except Exception:
-    pass
-try:
-    import requests
-    _patch_reason(requests.models.Response)
-except Exception:
-    pass
-try:
-    _patch_reason(http.client.HTTPResponse)
-except Exception:
-    pass
-try:
-    import urllib3.response
-    _patch_reason(urllib3.response.HTTPResponse)
-except Exception:
-    pass
-try:
-    import websocket._http as _wshttp
-    # websocket-client uses http.client internally, already patched
-except Exception:
-    pass
+        import pathlib
+        for pkg in ["pyquotex", "websocket", "httpx", "requests"]:
+            try:
+                mod = __import__(pkg)
+                base = pathlib.Path(mod.__file__).parent
+                for p in base.rglob("*.py"):
+                    try:
+                        t = p.read_text(errors="ignore")
+                        if "reason_phrase" in t:
+                            p.write_text(t.replace(".reason_phrase", ".reason"))
+                            print(f"FIXED {p}")
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+    except Exception as e:
+        print(f"Fix failed: {e}")
+_fix_files()
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 

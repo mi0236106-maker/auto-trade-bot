@@ -4,6 +4,7 @@ try:
 except Exception:
     pass
 import os, asyncio, random, math, time
+BASE_AMOUNT = 1.0
 DEALS = 5
 STEPS = 3
 COEF = 2.2

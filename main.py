@@ -1,5 +1,5 @@
 import os, asyncio, random, math, time, http.client
-# --- STRONG FIX for reason_phrase ---
+# --- ULTIMATE FIX for reason_phrase ---
 try:
     import httpx
     def _reason(self):
@@ -7,16 +7,28 @@ try:
             return http.client.responses.get(self.status_code, "")
         except Exception:
             return ""
-    httpx.Response.reason_phrase = property(_reason)
+    try:
+        httpx.Response.reason_phrase = property(_reason)
+    except Exception:
+        pass
     try:
         httpx._models.Response.reason_phrase = property(_reason)
     except Exception:
         pass
-    try:
-        import requests
-        requests.models.Response.reason_phrase = property(lambda s: getattr(s, "reason", "") or "")
-    except Exception:
-        pass
+except Exception:
+    pass
+try:
+    import requests
+    requests.models.Response.reason_phrase = property(lambda s: getattr(s, "reason", "") or "")
+except Exception:
+    pass
+try:
+    http.client.HTTPResponse.reason_phrase = property(lambda s: getattr(s, "reason", "") or "")
+except Exception:
+    pass
+try:
+    import urllib3.response
+    urllib3.response.HTTPResponse.reason_phrase = property(lambda s: getattr(s, "reason", "") or "")
 except Exception:
     pass
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update

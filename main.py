@@ -1,4 +1,18 @@
-import httpx
+# FIX: pyquotex expects .reason_phrase, httpx/requests don't have it
+import http.client
+try:
+    import httpx
+    if not hasattr(httpx.Response, "reason_phrase"):
+        httpx.Response.reason_phrase = property(lambda self: http.client.responses.get(self.status_code, ""))
+except Exception:
+    pass
+try:
+    import requests
+    if not hasattr(requests.models.Response, "reason_phrase"):
+        requests.models.Response.reason_phrase = property(lambda self: getattr(self, "reason", ""))
+except Exception:
+    pass
+    import httpx
 try:
     httpx.Response.reason_phrase = property(lambda self: getattr(self, "reason", "") or "")
 except Exception:

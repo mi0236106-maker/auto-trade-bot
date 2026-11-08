@@ -3,6 +3,11 @@ try:
     httpx.Response.reason_phrase = property(lambda self: getattr(self, "reason", "") or "")
 except Exception:
     pass
+try:
+    import requests
+    requests.models.Response.reason_phrase = property(lambda self: getattr(self, "reason", "") or "")
+except Exception:
+    pass
 import os, asyncio, random, math, time
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes

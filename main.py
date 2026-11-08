@@ -4,11 +4,22 @@ def _fix_files():
 _fix_files()
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
-# --- PATCH httpx reason_phrase ---
+# --- PATCH reason_phrase for ALL libs ---
+def _rp(self):
+    return getattr(self, "reason", "") or getattr(self, "_reason", "") or ""
 try:
     import httpx
-    if not hasattr(httpx.Response, "reason_phrase"):
-        httpx.Response.reason_phrase = property(lambda self: getattr(self, "reason", "") or "")
+    httpx.Response.reason_phrase = property(_rp)
+except Exception:
+    pass
+try:
+    import requests.models
+    requests.models.Response.reason_phrase = property(_rp)
+except Exception:
+    pass
+try:
+    import httpcore
+    httpcore.Response.reason_phrase = property(_rp)
 except Exception:
     pass
 BASE_AMOUNT = 1.0

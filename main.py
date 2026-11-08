@@ -9,8 +9,9 @@ except Exception:
 try:
     if not hasattr(requests.Response, "reason_phrase"):
         requests.Response.reason_phrase = property(lambda self: getattr(self, "reason", "") or "")
-except Exception:
-    passimport os, asyncio, random, math, time
+   except Exception:
+       pass
+   import os, asyncio, random, math, time
 def _fix_files():
     pass
 _fix_files()

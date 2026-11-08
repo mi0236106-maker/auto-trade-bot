@@ -1,41 +1,9 @@
-# FIX for pyquotex + httpx: add missing reason_phrase
 import httpx
-import requests
 try:
-    if not hasattr(httpx.Response, "reason_phrase"):
-        httpx.Response.reason_phrase = property(lambda self: getattr(self, "reason", "") or "")
+    httpx.Response.reason_phrase = property(lambda self: getattr(self, "reason", "") or "")
 except Exception:
     pass
-try:
-    if not hasattr(requests.Response, "reason_phrase"):
-        requests.Response.reason_phrase = property(lambda self: getattr(self, "reason", "") or "")
-   except Exception:
-       pass
-   import os, asyncio, random, math, time
-def _fix_files():
-    pass
-_fix_files()
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
-# --- PATCH reason_phrase for ALL libs ---
-def _rp(self):
-    return getattr(self, "reason", "") or getattr(self, "_reason", "") or ""
-try:
-    import httpx
-    httpx.Response.reason_phrase = property(_rp)
-except Exception:
-    pass
-try:
-    import requests.models
-    requests.models.Response.reason_phrase = property(_rp)
-except Exception:
-    pass
-try:
-    import httpcore
-    httpcore.Response.reason_phrase = property(_rp)
-except Exception:
-    pass
-BASE_AMOUNT = 1.0
+import os, asyncio, random, math, time
 DEALS = 5
 STEPS = 3
 COEF = 2.2

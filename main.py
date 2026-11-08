@@ -4,6 +4,8 @@ try:
 except Exception:
     pass
 import os, asyncio, random, math, time
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 BASE_AMOUNT = 1.0
 DEALS = 5
 STEPS = 3

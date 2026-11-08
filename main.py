@@ -1,25 +1,14 @@
-# FIX: pyquotex expects .reason_phrase, httpx/requests don't have it
-import http.client
+# STRONG FIX: rewrite pyquotex's .reason_phrase -> .reason in installed files
+import os, glob, sysconfig
 try:
-    import httpx
-    if not hasattr(httpx.Response, "reason_phrase"):
-        httpx.Response.reason_phrase = property(lambda self: http.client.responses.get(self.status_code, ""))
-except Exception:
-    pass
-try:
-    import requests
-    if not hasattr(requests.models.Response, "reason_phrase"):
-        requests.models.Response.reason_phrase = property(lambda self: getattr(self, "reason", ""))
-except Exception:
-    pass
-    import httpx
-try:
-    httpx.Response.reason_phrase = property(lambda self: getattr(self, "reason", "") or "")
-except Exception:
-    pass
-try:
-    import requests
-    requests.models.Response.reason_phrase = property(lambda self: getattr(self, "reason", "") or "")
+    sp = sysconfig.get_paths()["purelib"]
+    for _f in glob.glob(os.path.join(sp, "pyquotex/**/*.py"), recursive=True):
+        try:
+            _t = open(_f, encoding="utf-8", errors="ignore").read()
+            if "reason_phrase" in _t:
+                open(_f, "w", encoding="utf-8").write(_t.replace(".reason_phrase", ".reason"))
+        except Exception:
+            pass
 except Exception:
     pass
 import os, asyncio, random, math, time

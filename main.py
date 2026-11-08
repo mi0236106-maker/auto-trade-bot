@@ -10,9 +10,11 @@ def _fix_files():
                 for p in base.rglob("*.py"):
                     try:
                         t = p.read_text(errors="ignore")
-                        if "reason_phrase" in t:
-                            p.write_text(t.replace(".reason_phrase", ".reason"))
-                            print(f"FIXED {p}")
+                        if "reason_phrase" in t or "quotex.com" in t:
+    t = t.replace(".reason_phrase", ".reason")
+    t = t.replace("quotex.com", "qxbroker.com")
+    p.write_text(t)
+    print(f"FIXED {p}")
                     except Exception:
                         pass
             except Exception:
